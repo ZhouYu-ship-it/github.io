@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: "Comic Sans MS", cursive;
+            background: #FFF5E6;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .menu {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px;
+            flex-wrap: wrap;
+        }
+
+        .food-item {
+            width: 120px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            background: white;
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .food-item:active {
+            transform: scale(0.95);
+        }
+
+        .food-img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+
+        .price {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .cart {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            width: 80%;
+            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats {
+            background: #FFFAF0;
+            padding: 20px;
+            border-radius: 20px;
+            margin: 20px auto;
+            width: 80%;
+        }
+
+        .student-id {
+            font-size: 24px;
+            color: #4169E1;
+            margin: 20px;
+        }
+
+        button {
+            background: #FFB6C1;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 20px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .popular-food {
+            animation: glow 1s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🍪 麦香坊小管家 📊</h1>
+    <!-- 显示当前小顾客编号 -->
+    <div class="student-id">👧 当前小顾客：1号</div>
+
+    <!-- 菜单区域 -->
+    <div class="menu">
+        <!-- 每种食物的项 -->
+        <div class="food-item" onclick="addItem('flower')">
+            <img src="flower.jpg" class="food-img" alt="鲜花饼">
+            <div class="price">🌟</div>
+        </div>
+        <div class="food-item" onclick="addItem('rainbow')">
+            <img src="rainbow.jpg" class="food-img" alt="五彩糕团">
+            <div class="price">🌟🌟</div>
+        </div>
+        <div class="food-item" onclick="addItem('bun')">
+            <img src="bun.jpg" class="food-img" alt="小笼包">
+            <div class="price">🌟🌟🌟</div>
+        </div>
+    </div>
+
+    <!-- 购物车区域 -->
+    <div class="cart">
+        <h3>🛒 当前订单</h3>
+        <div id="currentOrder"></div>
+        <div>🌟总数：<span id="currentStars">0</span></div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <button onclick="nextStudent()">➡️ 下一个小顾客</button>
+    <button onclick="showStats()">📊 查看统计</button>
+
+    <!-- 统计信息区域，初始隐藏 -->
+    <div class="stats" id="stats" style="display: none">
+        <h3>📈 最受欢迎点心</h3>
+        <div id="popularFood"></div>
+        <div id="allOrders"></div>
+    </div>
+
+    <script>
+        // 当前小顾客编号
+        let currentStudent = 1;
+        // 存储每个小顾客的订单
+        const orders = {};
+        // 存储每种食物的销售统计
+        const foodStats = { flower: 0, rainbow: 0, bun: 0 };
+        // 每种食物对应的星星数
+        const foodStarMap = { flower: 1, rainbow: 2, bun: 3 };
+
+        // 添加食物到当前小顾客的订单
+        function addItem(type) {
+            if (!orders[currentStudent]) {
+                orders[currentStudent] = [];
+            }
+            orders[currentStudent].push(type);
+            foodStats[type]++;
+            updateCart();
+        }
+
+        // 更新购物车显示
+        function updateCart() {
+            const current = orders[currentStudent] || [];
+            // 显示当前订单中的食物图片
+            const orderHtml = current.length ? current.map(type => `<img src="${type}.jpg" style="width:40px; height:40px; margin:5px">`).join('') : '空空如也～';
+            document.getElementById('currentOrder').innerHTML = orderHtml;
+
+            // 计算当前订单的星星总数
+            const stars = current.reduce((sum, type) => sum + foodStarMap[type], 0);
+            document.getElementById('currentStars').textContent = '🌟'.repeat(stars);
+        }
+
+        // 切换到下一个小顾客
+        function nextStudent() {
+			//最大支持多少个顾客下单
+            if (currentStudent < 21) {
+                currentStudent++;
+                document.querySelector('.student-id').textContent = `👦 当前小顾客：${currentStudent}号`;
+                orders[currentStudent] = [];
+                updateCart();
+            } else {
+                alert('🎉 所有小顾客都点完啦！');
+            }
+        }
+
+        // 显示统计信息
+        function showStats() {
+            // 找出最受欢迎的食物
+            const maxCount = Math.max(...Object.values(foodStats));
+            const popular = Object.entries(foodStats)
+               .filter(([_, count]) => count === maxCount)
+               .map(([type]) => type);
+
+            // 显示最受欢迎的食物
+            const popularHtml = popular.map(type => `
+                <div class="popular-food">
+                    <img src="${type}.jpg" style="width:80px; height:80px">
+                    <div>${maxCount}份</div>
+                </div>
+            `).join('');
+            document.getElementById('popularFood').innerHTML = popularHtml;
+
+            // 显示所有食物的销售统计
+            const allOrdersHtml = `
+                <h4>所有订单统计：</h4>
+                <div>🌸 鲜花饼：${foodStats.flower} 份</div>
+                <div>🌈 五彩糕团：${foodStats.rainbow} 份</div>
+                <div>🥟 小笼包：${foodStats.bun} 份</div>
+            `;
+            document.getElementById('allOrders').innerHTML = allOrdersHtml;
+
+            // 显示统计信息区域
+            document.getElementById('stats').style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>    
